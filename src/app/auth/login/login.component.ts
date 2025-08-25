@@ -1,23 +1,51 @@
 import { Component } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+function mustContainQuestionMark(control: AbstractControl) {
+  if (control.value.includes('?')) {
+    return null;
+  }
+
+  return { doesNotContainQuestionMark: true }
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-  onSubmit(formData: NgForm) {
-    if (!formData.valid) {
-      return;
-    }
-    const enteredEmail = formData.form.value.email;
-    const enteredPassword = formData.form.value.password;
+  form = new FormGroup({
+    email: new FormControl('', {
+      validators: [ Validators.email, Validators.required ]
+    }),
+    password: new FormControl('' , {
+      validators: [ Validators.required, Validators.minLength(6), mustContainQuestionMark]
+    })
+  });
 
+  get emailIsInvalid() {
+    return (this.form.controls.email.touched &&
+            this.form.controls.email.dirty &&
+            this.form.controls.email.invalid
+    );
+  }
 
-    console.log(formData.form);
+  get passwordIsInvalid() {
+    return (this.form.controls.password.touched &&
+            this.form.controls.password.dirty &&
+            this.form.controls.password.invalid
+    );
+  }
+
+  onSubmit(){
+    console.log(this.form);
+    const enteredEmail = this.form.value.email;
+    const enteredPassword = this.form.value.password;
+
     console.log(enteredEmail, enteredPassword);
+
   }
 }
